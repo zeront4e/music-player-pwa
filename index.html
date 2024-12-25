@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="robots" content="noindex, nofollow" />
+
+    <title>Music album PWA</title>
+
+    <!-- This sets the icons (e.g. shown in a web-browser). -->
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="shortcut icon" href="/icon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Music album PWA" />
+
+    <!-- This includes the manifest.json file, which contains the PWA information to make this "App" installable. -->
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- This allows you to use Bootstrap CSS. -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <!-- This adds animations, if you want to. See: https://animate.style/ -->
+    <link rel="stylesheet" href="css/animate.min.css">
+
+    <style>
+        /* We ensure the usage of the available height. */
+
+        html {
+            min-height: 100%;
+        }
+
+        /* Body default background. */
+
+        .body-default-background {
+            background-image: linear-gradient(120deg,#ff4b72c9, #C74BFFc9, #ff9191c9);
+            background-color: darkcyan;
+        }
+
+        /* Custom themed button. */
+
+        .btn-themed {
+            background-color: #ffffff4f;
+        }
+
+        .btn-themed:hover {
+            background-color: #ffffff70;
+        }
+
+        /* Custom CSS loading animation. */
+
+        .lds-blocks,
+        .lds-blocks div {
+            box-sizing: border-box;
+        }
+        
+        .lds-blocks {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .lds-blocks div {
+            display: inline-block;
+            position: absolute;
+            left: 8px;
+            width: 16px;
+            background: currentColor;
+            animation: lds-blocks 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+        }
+        
+        .lds-blocks div:nth-child(1) {
+            left: 8px;
+            animation-delay: -0.24s;
+        }
+
+        .lds-blocks div:nth-child(2) {
+            left: 32px;
+            animation-delay: -0.12s;
+        }
+        
+        .lds-blocks div:nth-child(3) {
+            left: 56px;
+            animation-delay: 0s;
+        }
+
+        @keyframes lds-blocks {
+            0% {
+                top: 8px;
+                height: 64px;
+            }
+            50%, 100% {
+                top: 24px;
+                height: 32px;
+            }
+        }
+    </style>
+</head>
+
+<body class="body-default-background">
+    <!-- Container to show a generic loading animation. -->
+
+    <div class="d-flex align-items-center justify-content-center min-vh-100">
+        <div id="containerLoadingData" class="container animate__animated animate__fadeIn">
+            <div class="align-items-center d-flex flex-column justify-content-center">
+                <div class="lds-blocks">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <h2>Loading data</h2>
+            </div>
+        </div>
+
+        <!-- Container to show install instructions. -->
+
+        <div id="containerInstallApp" class="container animate__animated animate__fadeInDown" style="display: none;">
+            <div class="row align-items-center">
+                <div class="col-11 mx-auto">
+                    <div class="card shadow border">
+                        <div class="card-body d-flex flex-column align-items-center">
+                            <img src="icon.png" style="width: auto; max-width: 15rem;" alt="Icon">
+                            
+                            <h2 class="card-text mt-2">
+                                Music album PWA
+                            </h2>
+
+                            <p style="font-size: 1.4rem;">
+                                Please install this app, to use it offline.
+                            </p>
+
+                            <button id="installerBtnInstallApp" class="btn btn-themed animate__animated animate__fadeIn" style="width: 100%; display: none;">
+                                <strong style="font-size: 1.4rem;">
+                                    Install app
+                                </strong>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Container to show all available songs. -->
+
+        <div id="containerSongList" class="container animate__animated animate__fadeIn" style="display: none;">
+            <div class="row align-items-center justify-content-center">
+                <div class="col-11 mx-auto">
+                    <div class="d-flex justify-content-center mb-2">
+                        <img src="icon.png" style="width: auto; max-width: 10rem;" alt="Icon">
+                    </div>
+                    <div class="d-flex justify-content-center mb-2">
+                        <h4>A music album PWA demo</h4>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" style="font-size: 1.2rem;">Songs list 💽</div>
+                        <div class="card-body">
+                            <div id="songListContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Container to show the player (which plays an individual song). -->
+
+        <div id="containerPlayer" class="container animate__animated animate__fadeIn" style="display: none;">
+            <div class="align-items-center d-flex justify-content-center">
+                <div class="card border-light mb-3" style="width: 95%;">
+                    <div class="card-body">
+                        <div class="row">
+                            <div id="playerSongAlbumCover" class="card border-light mb-3" style="width: 12rem; height: 12rem; margin: auto; background-image: url('icon.png'); background-repeat: no-repeat; background-size: cover;">
+                                <div class="card-body">
+                                    <!-- Ignore... -->
+                                </div>
+                            </div>
+    
+                            <div>
+                                <h3 id="playerSongTitle">Song Title</h3>
+                            
+                                <p>
+                                    Artist: <span id="playerSongArtist">Unknown</span>
+                                    <br>
+                                    Album: <span id="playerSongAlbum">Unknown</span>
+                                    <br>
+                                    Year: <span id="playerSongYear">Unknown</span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div id="playerAudioControlsContainer" class="mt-1" style="width: 100%;"></div>
+                        </div>
+
+                        <hr style="margin-top: 0.5rem; margin-bottom: 0.2rem;">
+
+                        <button id="playerBtnBackToSongs" class="btn btn-sm btn-themed mt-2" style="width: 100%; font-size: 1.2rem;">
+                            Back to songs list 💽
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- We add the Bootstrap JS code. -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- We add the MP3 tag library. -->
+    <script src="js/mp3tag.min.js"></script>
+
+    <!-- We add the wavesurfer audio-visualization. -->
+    <script src="js/wavesurfer.min.js"></script>
+
+    <script>
+        //Catch install prompt event to enable the installation button.
+        //We can perform a "one-click" installation by catching the event.
+
+        let deferredPrompt = null;
+
+        window.addEventListener("beforeinstallprompt", (event) => {
+            event.preventDefault();
+            
+            //Stash the event, so it can be triggered later.
+            deferredPrompt = event;
+        });
+
+        //Utility functions (state independent).
+
+        function utilPwaIsPwaInstalled() {
+            return new Promise((resolve) => {
+                if (document.referrer.startsWith("android-app://")) {
+                    resolve(true);
+                    return;
+                }
+
+                if (window.matchMedia("(display-mode: browser)").matches) {
+                    resolve(false);
+                    return;
+                }
+                    
+                if (window.matchMedia("(display-mode: standalone)").matches) {
+                    resolve(true);
+                    return;
+                }
+            
+                if (window.matchMedia("(display-mode: minimal-ui)").matches) {
+                    resolve(true);
+                    return;
+                }
+                    
+                if (window.matchMedia("(display-mode: fullscreen)").matches) {
+                    resolve(true);
+                    return;
+                }
+
+                if (window.matchMedia("(display-mode: window-controls-overlay)").matches) {
+                    resolve(true);
+                    return;
+                }
+
+                resolve(false);
+            });
+        }
+
+        function utilMusicReadMp3TagsOrFail(mp3DataBuffer) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const verboseLog = false;
+        
+                    const mp3tag = new MP3Tag(mp3DataBuffer, verboseLog);
+
+                    // We try to read the MP3 tags.
+                    mp3tag.read();
+
+                    if(mp3tag.error !== "") {
+                        // An unexpected parsing error occurred. Reject.
+                        
+                        reject(new Error("Unable to read MP3 tags. Cause: " + mp3tag.error));
+                        
+                        return;
+                    }
+
+                    // Extract the image data, if available.
+                    
+                    if(mp3tag.tags.v2 && mp3tag.tags.v2.APIC) {
+                        //We assume that the first image is the cover.
+                        const albumCover = mp3tag.tags.v2.APIC[0];
+
+                        if(albumCover && albumCover.data) {
+                            const dataArray = new Uint8Array(albumCover.data);
+                            
+                            const arrayToBase64 = (dataArrayInstance) => {
+                                return new Promise((resolve, reject) => {
+                                    try {
+                                        const reader = new FileReader();
+                                
+                                        reader.readAsDataURL(new Blob([dataArrayInstance]));
+                                        
+                                        reader.onloadend = () => {
+                                            resolve(reader.result);
+                                        };
+                                    } 
+                                    catch (error) {
+                                        reject(error);
+                                    }
+                                });
+                            };
+
+                            arrayToBase64(dataArray).then((base64Data) => {
+                                //Resolve with the cover image.
+
+                                resolve({
+                                    tags: mp3tag.tags,
+                                    imageUrlOrNull: base64Data
+                                });
+                           }).catch(reject);
+                        }
+                    }
+                    else {
+                        //Resolve without the cover image.
+
+                        resolve({
+                            tags: mp3tag.tags,
+                            imageUrlOrNull: null
+                        });
+                    }
+                } 
+                catch (error) {
+                    //An unhandled error occurred. Reject.
+
+                    reject(error);
+                }
+            });
+        }
+
+        function utilMusicReadMusicJsonData() {
+            return new Promise((resolve, reject) => {
+                try {
+                    fetch("music.json").then(response => response.json())
+                    .then(musicJsonData => {
+                        //We read the music.json data. Resolve.
+
+                        console.log("There are " + musicJsonData.files.length + " loaded songs.");
+                        
+                        resolve(musicJsonData);
+                    })
+                    .catch(error => {
+                        reject(new Error("Unable to read music.json data. Cause: " + error));
+                    });     
+                } 
+                catch (error) {
+                    //An unhandled error occurred. Reject.
+
+                    reject(error);
+                }
+            });
+        }
+
+        //--------------------------------------------------
+        //Actual implementation.
+        //--------------------------------------------------
+
+        //Get all container DOM elements to show and hide them, depending on the state.
+
+        const containerLoadingData = document.querySelector("#containerLoadingData");
+        const containerInstallApp = document.querySelector("#containerInstallApp");
+        const containerSongList = document.querySelector("#containerSongList");
+        const containerPlayer = document.querySelector("#containerPlayer");
+
+        //These functions are responsible for a certain DOM container. Call them to show a certain container (and hide all other containers).
+
+        function showInstallInstructionsContainerOrFail() {
+            //Find all DOM elements related to the installation instructions.
+
+            const installerBtnInstallApp = document.querySelector("#installerBtnInstallApp");
+
+            //Show install instructions.
+            
+            containerLoadingData.style.display = "none";
+            containerInstallApp.style.display = "initial";
+            containerSongList.style.display = "none";
+            containerPlayer.style.display = "none";
+
+            //We overwrite the generic fallback handler.
+
+            const installInstructionInterval = setInterval(() => {
+                //Check if we received a deferred event.
+
+                if(deferredPrompt !== null) {
+                    installerBtnInstallApp.style.display = "block";
+
+                    clearInterval(installInstructionInterval);
+                }
+                else {
+                    utilPwaIsPwaInstalled().then((isPwaInstalled) => {
+                        clearInterval(installInstructionInterval);
+                    });
+                }
+            }, 1000);
+
+            installerBtnInstallApp.onclick = (event) => {
+                if(deferredPrompt !== null) {
+                    deferredPrompt.prompt();
+                }
+                else {
+                    alert("Oh no. The browser doesn't support the automatic installation. 😵 Please install this PWA manually.");
+                }
+            };
+        }
+
+        function showPlayerContainerForAudioFileOrFail(audioFilePath) {
+            //Declare constants.
+
+            const DEFAULT_PLAYER_COVER_URL_PATH = "icon.png";
+            const DEFAULT_PLAYER_UNKNOWN_DATA = "Unknown";
+
+            //Find all DOM elements related to the player.
+
+            const playerAudioControlsContainer = document.querySelector("#playerAudioControlsContainer");
+            const playerBtnBackToSongs = document.querySelector("#playerBtnBackToSongs");
+            const playerSongTitle = document.querySelector("#playerSongTitle");
+            const playerSongArtist = document.querySelector("#playerSongArtist");
+            const playerSongAlbum = document.querySelector("#playerSongAlbum");
+            const playerSongAlbumCover = document.querySelector("#playerSongAlbumCover");
+            const playerSongYear = document.querySelector("#playerSongYear");
+
+            const playerUpdateAlbumCover = function(coverUrl) {
+                playerSongAlbumCover.style.backgroundImage = "url('" + coverUrl + "')";
+            };
+
+            //Show loading animation.
+                                
+            containerLoadingData.style.display = "initial";
+            containerInstallApp.style.display = "none";
+            containerSongList.style.display = "none";
+            containerPlayer.style.display = "none";
+
+            //Try to load audio file blob.
+
+            fetch(audioFilePath)
+            .then((response) => response.blob())
+            .then((response) => response.arrayBuffer())
+            .then((arrayBuffer) => {
+                //Try to load metadata or set the defaults.
+
+                utilMusicReadMp3TagsOrFail(arrayBuffer).then((metaData) => {
+                    console.log("MP3 tags loaded successfully. Update player values.");
+
+                    if(metaData.tags.title === "") {
+                        playerSongTitle.innerHTML = DEFAULT_PLAYER_UNKNOWN_DATA;
+                    }
+                    else {
+                        playerSongTitle.innerHTML = metaData.tags.title;
+                    }
+
+                    if(metaData.tags.artist === "") {
+                        playerSongArtist.innerHTML = DEFAULT_PLAYER_UNKNOWN_DATA;
+                    }
+                    else {
+                        playerSongArtist.innerHTML = metaData.tags.artist;
+                    }
+                    
+                    if(metaData.tags.album === "") {
+                        playerSongAlbum.innerHTML = DEFAULT_PLAYER_UNKNOWN_DATA;
+                    }
+                    else {
+                        playerSongAlbum.innerHTML = metaData.tags.album;
+                    }
+
+                    if (metaData.imageUrlOrNull) {
+                        playerUpdateAlbumCover(metaData.imageUrlOrNull);
+                    } 
+                    else {
+                        playerUpdateAlbumCover(DEFAULT_PLAYER_COVER_URL_PATH);
+                    }
+
+                    if(metaData.tags.year === "") {
+                        playerSongYear.innerHTML = DEFAULT_PLAYER_UNKNOWN_DATA;
+                    }
+                    else {
+                        playerSongYear.innerHTML = metaData.tags.year;
+                    }
+                }).catch((error) => {
+                    console.warn("Unable to load MP3 file tags. Set fallback player values. Cause: " + error);
+                    
+                    playerSongTitle.innerHTML = decodeURI(audioFilePath);
+
+                    playerSongArtist.innerHTML = DEFAULT_PLAYER_UNKNOWN_DATA;
+                    
+                    playerSongAlbum.innerHTML = DEFAULT_PLAYER_UNKNOWN_DATA;
+
+                    playerUpdateAlbumCover(DEFAULT_PLAYER_COVER_URL_PATH);
+
+                    playerSongYear.innerHTML = DEFAULT_PLAYER_UNKNOWN_DATA;
+                }).finally(() => {
+                    //Reset audio player container.
+
+                    playerAudioControlsContainer.replaceChildren();
+
+                    //Create audio visualization elements.
+
+                    const playerAudioVisualizationContainer = document.createElement("div");
+
+                    playerAudioVisualizationContainer.style = "width: 100%;";
+                    playerAudioVisualizationContainer.id = "playerAudioVisualizationContainer";
+
+                    playerAudioControlsContainer.appendChild(playerAudioVisualizationContainer);
+
+                    const audio = new Audio();
+
+                    audio.controls = true;
+                    audio.style = "width: 100%;";
+                    audio.classList.add("mt-2");
+
+                    audio.src = audioFilePath; //This file should be cached. No need to use the blob.
+
+                    //Create wavesurfer visualization.
+
+                    const wavesurfer = WaveSurfer.create({
+                        container: "#playerAudioVisualizationContainer",
+                        waveColor: "#ffcd28",
+                        progressColor: "white",
+                        media: audio
+                    });
+
+                    //Create custom player elements.
+
+                    const customPlayer = document.createElement("div");
+                    customPlayer.classList.add("mt-2");
+                    customPlayer.classList.add("flex-wrap");
+                    customPlayer.classList.add("justify-content-between");
+                    customPlayer.style.display = "flex";
+                    customPlayer.style.alignItems = "center";
+                    customPlayer.style.justifyContent = "center";
+
+                    const playerBtnPlayPause = document.createElement("button");
+                    playerBtnPlayPause.className = "btn btn-sm btn-themed";
+                    playerBtnPlayPause.style.minWidth = "5rem";
+                    playerBtnPlayPause.style.minHeight = "2.5rem";
+                    playerBtnPlayPause.style.fontSize = "1.2rem";
+
+                    const volumeSlider = document.createElement("input");
+                    volumeSlider.type = "range";
+                    volumeSlider.min = "0";
+                    volumeSlider.max = "1";
+                    volumeSlider.step = "0.1";
+                    volumeSlider.value = "1";
+                    volumeSlider.style.minWidth = "16rem";
+                    volumeSlider.style.marginTop = "0.2rem";
+                    volumeSlider.classList.add("form-range");
+
+                    const volumeSliderContainer = document.createElement("span");
+                    volumeSliderContainer.style.textAlign = "center";
+                    volumeSliderContainer.style.marginTop = "0.2rem";
+                    volumeSliderContainer.append("Volume:");
+                    volumeSliderContainer.appendChild(document.createElement("br"));
+                    volumeSliderContainer.appendChild(volumeSlider);
+
+                    const timeDisplay = document.createElement("span");
+                    timeDisplay.textContent = "0 / 0";
+
+                    customPlayer.appendChild(playerBtnPlayPause);
+
+                    if(!(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))) {
+                        //We only enable to volume slider on non-mobile devices, due to possible missing compatibility.
+                        customPlayer.appendChild(volumeSliderContainer);   
+                    }
+                    
+                    customPlayer.appendChild(timeDisplay);
+
+                    playerAudioControlsContainer.appendChild(customPlayer);
+
+                    playerBtnPlayPause.addEventListener("click", () => {
+                        if (audio.paused) {
+                            audio.play();
+                        } 
+                        else {
+                            audio.pause();
+                        }
+                    });
+
+                    volumeSlider.addEventListener("input", (event) => {
+                        audio.volume = event.target.value;
+                    });
+
+                    let initialAudioDuration = 0;
+
+                    audio.addEventListener("timeupdate", () => {
+                        const formatTime = (timeInSeconds) => {
+                            const minutes = Math.floor(timeInSeconds / 60);
+                            const seconds = Math.floor(timeInSeconds % 60);
+                            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        };
+
+                        //The following logic is a workaround to display the "correct" duration.
+
+                        if(initialAudioDuration == 0) {
+                            initialAudioDuration = audio.duration;
+                        }
+
+                        let playbackTime;
+                        
+                        if(audio.currentTime > initialAudioDuration) {
+                            playbackTime = initialAudioDuration;
+                        }
+                        else {
+                            playbackTime = audio.currentTime;
+                        }
+
+                        const time = formatTime(playbackTime);
+                        const duration = formatTime(initialAudioDuration);
+
+                        timeDisplay.textContent = `${time} / ${duration}`;
+                    });
+
+                    playerBtnBackToSongs.addEventListener("click", () => {
+                        audio.pause();
+
+                        visResetVisualization();
+
+                        showSongsListContainerOrFail();
+                    });
+
+                    //Create an audio context.
+
+                    const audioContext = new AudioContext();
+
+                    const audioSource = audioContext.createMediaElementSource(audio);
+                    
+                    audioSource.connect(audioContext.destination);
+
+                    //Create an audio analyzer.
+
+                    const analyzer = audioContext.createAnalyser();
+
+                    const frequency = new Uint8Array(analyzer.frequencyBinCount);
+                    
+                    audioSource.connect(analyzer);
+
+                    //Play as soon as the preview is ready.
+
+                    wavesurfer.on("ready", (durationTime) => {
+                        console.log("Wavesurfer is ready. Time: " + durationTime);
+
+                        //Play audio.
+
+                        audio.play();
+
+                        //Hide loading animation.
+                                    
+                        containerLoadingData.style.display = "none";
+                        containerInstallApp.style.display = "none";
+                        containerSongList.style.display = "none";
+                        containerPlayer.style.display = "initial";
+                    });
+
+
+                    //Add audio visualization logic.
+
+                    const visNormalize = (value, min, max) => {
+                        return (value - min) / (max - min);
+                    };
+
+                    const visGenerateValues = (frequencyData) => {
+                        //Divide the frequency data into three sections.
+                        
+                        const sectionSize = Math.floor(frequencyData.length / 3);
+                        
+                        //Calculate the average value for each section.
+
+                        const lowFreq = frequencyData.slice(0, sectionSize).reduce((value1, value2) => value1 + value2, 0) / sectionSize;
+                        const midFreq = frequencyData.slice(sectionSize, sectionSize * 2).reduce((value1, value2) => value1 + value2, 0) / sectionSize;
+                        const highFreq = frequencyData.slice(sectionSize * 2).reduce((value1, value2) => value1 + value2, 0) / sectionSize;
+
+                        //Normalize the values to the range [0, 1].
+
+                        const normalizedLow = visNormalize(lowFreq, 0, 255);
+                        const normalizedMid = visNormalize(midFreq, 0, 255);
+                        const normalizedHigh = visNormalize(highFreq, 0, 255);
+
+                        return [normalizedLow, normalizedMid, normalizedHigh];
+                    };
+
+                    const visResetVisualization = () => {                        
+                        //Reset the background gradient.
+                        
+                        document.body.style.backgroundImage = "";
+                    };
+
+                    const visRequestAnimationFrame = () => {
+                        //Request the next animation frame, if the audio is still playing.
+
+                        if(audio.duration > 0 && !audio.paused) {
+                            requestAnimationFrame(visRenderVisualization);
+                        }
+                    };
+
+                    const visRenderDelayMilliseconds = 30; //This reduces the amount of rendered changes. Increase to improve performance.
+                    let visLastRenderTimestamp = Date.now(); //The last time of a rendered change.
+
+                    let visRotation; //Cache the last rotation value.
+
+                    const visRenderVisualization = () => {
+                        //Only calculate the data and update the UI after a short delay occurred (to save resources).
+
+                        const currentTime = Date.now();
+                        const elapsedTime = currentTime - visLastRenderTimestamp;
+
+                        if (!audio.paused && !audio.ended && elapsedTime >= visRenderDelayMilliseconds) {
+                            //We should render the next visualization. Continue.
+
+                            visLastRenderTimestamp = currentTime;
+                        }
+                        else {
+                            //We shouldn't render yet. Return.
+
+                            visRequestAnimationFrame();
+                            
+                            return;
+                        }
+
+                        //Update frequency data.
+
+                        analyzer.getByteFrequencyData(frequency);
+
+                        const maxDataPoints = 30; //This limits the analyzed data points. Change, it if you want to.
+                        const frequencySlice = frequency.slice(0, maxDataPoints);
+
+                        const [lowVal, midVal, highVal] = visGenerateValues(frequencySlice);
+
+                        //Calculate dynamic gradient (this isn't perfect at all, but it looks sufficient).
+
+                        visRotation = visRotation || 0;
+                        visRotation += 0.5;
+
+                        if(visRotation >= 360) {
+                            visRotation = 0;
+                        }
+
+                        let aValue = (lowVal + midVal + highVal * 2) / 3;
+
+                        if(aValue > 1) {
+                            //We perform a hard cut, if the value exceeds 1.
+                            aValue = 1;
+                        }
+                        else if(aValue < 0.4) {
+                            //We perform a hard minimal value, if the value is 0.
+                            aValue = 0.4;
+                        }
+
+                        const rValue = "rgba(255, 151, 59, " + aValue + ")";
+                        const gValue = "rgba(168, 13, 255, " + aValue + ")";
+                        const bValue = "rgba(255, 46, 115, " + aValue + ")";
+                        
+                        document.body.style.backgroundImage = "linear-gradient(" + visRotation + "deg," + rValue + "," +
+                            gValue + "," + bValue + ")";
+
+                        //Request the next animation frame.
+                        visRequestAnimationFrame();
+                    };
+
+                    //Add audio event listeners.
+
+                    audio.addEventListener("play", () => {
+                        playerBtnPlayPause.innerHTML = "⏸";
+                    
+                        //We request the initial animation frame.
+                        visRequestAnimationFrame();
+                    });
+
+                    audio.addEventListener("pause", () => {
+                        playerBtnPlayPause.innerHTML = "▶️";    
+                    });
+                    
+                    audio.addEventListener("ended", () => {
+                        //Disable dynamic controls.
+
+                        playerBtnPlayPause.disabled = true;
+                        wavesurfer.interact = false;
+
+                        //Disable static UI elements.
+
+                        playerBtnBackToSongs.disabled = true;
+                        containerPlayer.classList.add("animate__fadeOut");
+
+                        setTimeout(() => {
+                            //Enable static UI elements.
+
+                            playerBtnBackToSongs.disabled = false;
+                            containerPlayer.classList.remove("animate__fadeOut");
+
+                            //Show songs container.
+
+                            visResetVisualization();
+
+                            showSongsListContainerOrFail();
+                        }, 1000);
+                    });
+
+                    audio.addEventListener("complete", visResetVisualization);
+                });
+            });
+        }
+
+        function showSongsListContainerOrFail() {
+            //Declare constants.
+
+            const LOCAL_STORAGE_FAVORITE_FILENAME_PREFIX = "musicFavorite";
+
+            //Find all DOM elements related to the songs list.
+
+            const songListContainer = document.querySelector("#songListContainer");
+
+            //Check if the songs were already loaded from the cache.
+
+            const songsWereLoaded = songListContainer.children.length > 0;
+
+            if(songsWereLoaded) {
+                //Show songs.
+                                
+                containerLoadingData.style.display = "none";
+                containerInstallApp.style.display = "none";
+                containerSongList.style.display = "initial";
+                containerPlayer.style.display = "none";
+
+                return;
+            }
+            else {
+                //Show loading animation.
+
+                containerLoadingData.style.display = "initial";
+                containerInstallApp.style.display = "none";
+                containerSongList.style.display = "none";
+                containerPlayer.style.display = "none";
+            }
+
+            //Try to load music.json data.
+
+            utilMusicReadMusicJsonData().then((musicJsonData) => {
+                //Show the available songs.
+                
+                const totalFiles = musicJsonData.files.length;
+                let processedFiles = 0;
+
+                musicJsonData.files.sort((firstFile, secondFile) => {
+                    let firstLoweredFile = firstFile.toLowerCase();
+                    let secondLoweredFile = secondFile.toLowerCase();
+                    
+                    if (firstLoweredFile < secondLoweredFile)
+                        return -1;
+
+                    if (firstLoweredFile > secondLoweredFile)
+                        return 1;
+
+                    return 0;
+                });
+
+                //We use this map to keep the correct order, despite the async loading.
+                const fileNameDomElementMap = new Map();
+
+                musicJsonData.files.forEach((tmpFile) => {
+                    //We fetch the audio file data.
+
+                    fetch("music/" + tmpFile)
+                    .then((response) => response.blob())
+                    .then((response) => response.arrayBuffer())
+                    .then((arrayBuffer) => {
+                        console.log("Loaded blob for file " + tmpFile + " (" + (arrayBuffer.byteLength / 1024) + " kib).");
+
+                        //Try to extract the metadata or set defaults.
+
+                        let songTitle = null;
+                        let songAlbum = null;
+                        let songArtist = null;
+
+                        utilMusicReadMp3TagsOrFail(arrayBuffer).then((metaData) => {
+                            console.log("MP3 tags loaded successfully for file " + tmpFile + ". Add song to list .");
+                            
+                            if(metaData.tags.title !== "") {
+                                songTitle = metaData.tags.title;
+                            }
+
+                            if(metaData.tags.album !== "") {
+                                songAlbum = metaData.tags.album;
+                            }
+
+                            if(metaData.tags.artist !== "") {
+                                songArtist = metaData.tags.artist;
+                            }
+                        }).catch((error) => {
+                            console.warn("Unable to load MP3 tags for file " + tmpFile + ". Set fallback player values. Cause: " + error);
+                        }).finally(() => {
+                            //Setup checkbox logic.
+
+                            const isSongFavorite = "true" === localStorage.getItem(LOCAL_STORAGE_FAVORITE_FILENAME_PREFIX + tmpFile);
+                            
+                            const songListItemInputId = "item" + Date.now();
+
+                            const songListItemInput = document.createElement("img");
+                            songListItemInput.style.width = "2rem";
+                            songListItemInput.style.marginBottom = "0.5rem";
+                            songListItemInput.style.cursor = "pointer";
+                            
+                            if(isSongFavorite) {
+                                songListItemInput.src = "favorite-checkbox-checked.png";
+                            }
+                            else {
+                                songListItemInput.src = "favorite-checkbox-unchecked.png";
+                            }
+
+                            songListItemInput.id = songListItemInputId;
+                            songListItemInput.dataset.checked = isSongFavorite;
+
+                            songListItemInput.addEventListener("click", () => {
+                                if(songListItemInput.dataset.checked === "true") {
+                                    songListItemInput.src = "favorite-checkbox-unchecked.png";
+
+                                    songListItemInput.dataset.checked = "false";
+
+                                    console.log("Removed favorite marker for song " + tmpFile + ".");
+
+                                    localStorage.removeItem(LOCAL_STORAGE_FAVORITE_FILENAME_PREFIX + tmpFile);
+                                }
+                                else {
+                                    songListItemInput.src = "favorite-checkbox-checked.png";
+
+                                    songListItemInput.dataset.checked = "true";
+
+                                    console.log("Mark song " + tmpFile + " as favorite.");
+                                    
+                                    localStorage.setItem(LOCAL_STORAGE_FAVORITE_FILENAME_PREFIX + tmpFile, "true");
+                                }
+                            });
+
+                            //Setup label.
+
+                            const songListItemLabel = document.createElement("span");
+
+                            songListItemLabel.style.fontSize = "1.2rem";
+                            songListItemLabel.style.marginLeft = "0.5rem";
+                            songListItemLabel.style.cursor = "pointer";
+
+                            let displayedSongTitle;
+
+                            if(songTitle !== null) {
+                                displayedSongTitle = songTitle;
+
+                                if(songAlbum !== null) {
+                                    displayedSongTitle += " - " + songAlbum;
+                                }
+
+                                if(songArtist !== null) {
+                                    displayedSongTitle += " (" + songArtist + ")";
+                                }
+                            }
+                            else {
+                                displayedSongTitle = decodeURI(tmpFile);
+                            }
+
+                            songListItemLabel.innerHTML = displayedSongTitle;
+
+                            songListItemLabel.addEventListener("click", () => {
+                                console.log("Try to play song " + tmpFile + ".");
+
+                                showPlayerContainerForAudioFileOrFail("music/" + tmpFile);
+                            });
+                            
+                            //Add components to DOM.
+
+                            const songListItem = document.createElement("div");
+
+                            songListItem.appendChild(songListItemInput);
+                            songListItem.appendChild(songListItemLabel);
+
+                            fileNameDomElementMap.set(tmpFile, songListItem);
+                            
+                            //Show the UI if everything was processed.
+
+                            processedFiles++;
+
+                            if(processedFiles === totalFiles) {
+                                //Reset the DOM.
+
+                                songListContainer.replaceChildren();
+
+                                //Set children in correct order.
+
+                                musicJsonData.files.forEach((fileNameKey) => {
+                                    songListContainer.appendChild(fileNameDomElementMap.get(fileNameKey));
+
+                                    if(songListContainer.childNodes.length > 0) {
+                                        const hrElement = document.createElement("hr");
+                                        hrElement.style.marginTop = "0.2rem";
+                                        hrElement.style.marginBottom = "0.2rem";
+
+                                        songListContainer.appendChild(hrElement);
+                                    }
+                                });
+
+                                fileNameDomElementMap.clear();
+
+                                //Hide loading animation.
+                                
+                                containerLoadingData.style.display = "none";
+                                containerInstallApp.style.display = "none";
+                                containerSongList.style.display = "initial";
+                                containerPlayer.style.display = "none";
+                            }
+                        });
+                    });
+                });
+            }).catch((error) => {
+                alert("Unable to load music.json data. 😵 Cause: " + error);
+            });
+        }
+
+        //Always try to register the service worker first (this caches the app data locally to make available offline).
+
+        if("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js").then(registration => {
+                console.log("Service Worker registration successful with scope: " + registration.scope);
+            }).catch(error => {
+                alert("The service worker registration failed. 😵 Cause: " + error);
+            });
+        }
+        else {
+            alert("This browser is unsupported. 😔 Please use a browser that supports PWA applications.\n\nHint: You can enter the full screen mode to simulate the PWA. 🤫");
+        }
+
+        //Show the available songs as soon as the PWA was installed. Show the installation instructions if it isn't installed yet.
+        //Repeat the installation check every second.
+
+        let showsInstallInstructions = false;
+
+        const checkPwaWasInstalled = () => {
+            utilPwaIsPwaInstalled().then(isInstalled => {
+                if(isInstalled) {
+                    //Show to available songs.
+    
+                    showSongsListContainerOrFail();
+                }
+                else {
+                    //Show the installation screen.
+        
+                    if(!showsInstallInstructions) {
+                        showsInstallInstructions = true;
+
+                        showInstallInstructionsContainerOrFail();
+                    }
+
+                    //Check if PWA was installed, after a short delay.
+
+                    setTimeout(checkPwaWasInstalled, 1000);
+                }
+            });
+        };
+
+        checkPwaWasInstalled();
+    </script>
+</body>
+</html>
