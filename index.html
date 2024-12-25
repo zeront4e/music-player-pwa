@@ -214,6 +214,10 @@
     <script src="js/wavesurfer.min.js"></script>
 
     <script>
+        //--------------------------------------------------
+        //Global variables (to catch events ASAP).
+        //--------------------------------------------------
+
         //Catch install prompt event to enable the installation button.
         //We can perform a "one-click" installation by catching the event.
 
@@ -226,7 +230,9 @@
             deferredPrompt = event;
         });
 
+        //--------------------------------------------------
         //Utility functions (state independent).
+        //--------------------------------------------------
 
         function utilPwaIsPwaInstalled() {
             return new Promise((resolve) => {
@@ -708,7 +714,7 @@
                         const currentTime = Date.now();
                         const elapsedTime = currentTime - visLastRenderTimestamp;
 
-                        if (!audio.paused && !audio.ended && elapsedTime >= visRenderDelayMilliseconds) {
+                        if (!audio.paused && !audio.ended && !document.hidden && elapsedTime >= visRenderDelayMilliseconds) {
                             //We should render the next visualization. Continue.
 
                             visLastRenderTimestamp = currentTime;
