@@ -2,6 +2,8 @@
 
 This is a simple proof-of-concept to ship a music album as a PWA, initially created for a friend (to "install" the album on an iOS device). Use it for whatever purpose you like (the custom JS code, as well as the HTML markup, is licensed under a CC0 license).
 
+You can click on the following link to access the [demo PWA](https://zeront4e.github.io/demos/music-player-pwa/index.html) (please enter the full-screen mode to simulate the installed PWA).
+
 ## Features 📦
 
 - Detection of the PWA install-state (shows install instructions if the PWA wasn't installed yet)
